@@ -1,0 +1,139 @@
+# Copyright 2025-2026 GitGovernance (https://www.gitgovernance.com)
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ---
+# CycleRecord Schema (v1.0)
+# Part of the GitGovernance Protocol — designed and maintained by GitGovernance.
+# Specification: RFC-05 (05_cycle.md)
+
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "cycle_record_schema.yaml"
+title: "CycleRecord"
+description: "Canonical schema for cycle records — strategic grouping of work into sprints, milestones, or roadmaps."
+additionalProperties: false
+type: object
+required:
+  - id
+  - title
+  - status
+properties:
+  id:
+    type: string
+    pattern: "^\\d{10}-cycle-[a-z0-9-]{1,50}$"
+    maxLength: 67
+    description: "Unique identifier for the cycle (10 timestamp + 1 dash + 5 'cycle' + 1 dash + max 50 slug = 67 max)."
+    examples:
+      - "1754400000-cycle-sprint-24-api-performance"
+      - "1754500000-cycle-auth-system-v2"
+      - "1754600000-cycle-q4-2025-growth"
+
+  title:
+    type: string
+    minLength: 1
+    maxLength: 256
+    description: "Human-readable title for the cycle (e.g., 'Sprint 24', 'Auth v2.0', 'Q4 2025')."
+    examples:
+      - "Sprint 24 - API Performance"
+      - "Authentication System v2.0"
+      - "Q4 2025 - Growth & Scale"
+
+  status:
+    type: string
+    enum: ["planning", "active", "completed", "archived"]
+    description: "The lifecycle status of the cycle."
+
+  taskIds:
+    type: array
+    items:
+      type: string
+      pattern: "^\\d{10}-task-[a-z0-9-]{1,50}$"
+      maxLength: 66
+    default: []
+    description: "Optional array of Task IDs that belong to this cycle. Bidirectional with TaskRecord.cycleIds. Can be empty for container cycles."
+    examples:
+      - ["1752274500-task-optimizar-endpoint-search", "1752360900-task-anadir-cache-a-redis"]
+
+  childCycleIds:
+    type: array
+    items:
+      type: string
+      pattern: "^\\d{10}-cycle-[a-z0-9-]{1,50}$"
+      maxLength: 67
+    default: []
+    description: "Optional array of child Cycle IDs for hierarchical composition (e.g., Q1 containing Sprint 1, Sprint 2, Sprint 3)."
+    examples:
+      - ["1754400000-cycle-sprint-24", "1754500000-cycle-sprint-25"]
+
+  tags:
+    type: array
+    items:
+      type: string
+      pattern: "^[a-z0-9-]+(:[a-z0-9-]+)*$"
+      maxLength: 100
+    default: []
+    description: "Optional list of key:value tags for categorization (e.g., 'roadmap:q4', 'team:alpha', 'okr:growth')."
+    examples:
+      - ["roadmap:q4", "team:backend"]
+      - ["sprint:24", "focus:performance"]
+      - ["milestone:v2", "security"]
+
+  notes:
+    type: string
+    minLength: 1
+    description: "Optional description of the cycle's goals, objectives, and context."
+
+examples:
+  # Example 1: Sprint (2-week iteration)
+  - id: "1754400000-cycle-sprint-24-api-performance"
+    title: "Sprint 24 - API Performance"
+    status: "active"
+    taskIds:
+      - "1752274500-task-optimizar-endpoint-search"
+      - "1752360900-task-anadir-cache-a-redis"
+      - "1752447300-task-implementar-rate-limiting"
+    tags:
+      - "sprint:24"
+      - "team:backend"
+      - "focus:performance"
+    notes: "Objective: Reduce API p95 latency below 200ms and prepare infrastructure for Black Friday."
+
+  # Example 2: Milestone (product feature)
+  - id: "1754500000-cycle-auth-system-v2"
+    title: "Authentication System v2.0"
+    status: "planning"
+    taskIds:
+      - "1752274500-task-oauth2-integration"
+      - "1752360900-task-2fa-implementation"
+      - "1752447300-task-password-recovery"
+      - "1752533700-task-session-management"
+    tags:
+      - "milestone:v2"
+      - "security"
+      - "feature:auth"
+    notes: "Major milestone: Complete authentication system with OAuth2, 2FA, and advanced session management. Critical for Q4 launch."
+
+  # Example 3: Quarterly roadmap (hierarchical container)
+  - id: "1754600000-cycle-q4-2025-growth"
+    title: "Q4 2025 - Growth & Scale"
+    status: "active"
+    childCycleIds:
+      - "1754400000-cycle-sprint-24-api-performance"
+      - "1754500000-cycle-auth-system-v2"
+      - "1754650000-cycle-mobile-app-launch"
+    tags:
+      - "roadmap:q4"
+      - "strategy:growth"
+      - "okr:scale-to-1m-users"
+    notes: "Quarterly objective: Scale to 1M active users. Includes performance improvements, new auth system, and mobile app launch."

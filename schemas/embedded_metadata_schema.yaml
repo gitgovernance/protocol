@@ -1,0 +1,122 @@
+# Copyright 2025-2026 GitGovernance (https://www.gitgovernance.com)
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ---
+# EmbeddedMetadata Schema (v1.0)
+# Part of the GitGovernance Protocol — designed and maintained by GitGovernance.
+# Specification: RFC-01 (01_embedded.md)
+
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "embedded_metadata_schema.yaml"
+title: "EmbeddedMetadataRecord"
+description: "Canonical schema for the wrapper structure of all GitGovernance records."
+type: object
+properties:
+  header:
+    type: object
+    properties:
+      version:
+        type: string
+        enum: ["1.0"]
+        description: "Version of the embedded metadata format."
+      type:
+        type: string
+        enum:
+          [
+            "actor",
+            "agent",
+            "task",
+            "execution",
+            "feedback",
+            "cycle",
+            "workflow",
+            "custom",
+          ]
+        description: "The type of the record contained in the payload."
+      schemaUrl:
+        type: string
+        description: "URL to a custom schema for the payload. Required when type is 'custom'."
+      schemaChecksum:
+        type: string
+        pattern: "^[a-fA-F0-9]{64}$"
+        description: "SHA-256 checksum of the custom schema. Required when type is 'custom'."
+      payloadChecksum:
+        type: string
+        pattern: "^[a-fA-F0-9]{64}$"
+        description: "SHA-256 checksum of the canonically serialized payload."
+      signatures:
+        type: array
+        minItems: 1
+        items:
+          type: object
+          properties:
+            keyId:
+              type: string
+              pattern: "^(human|agent)(:[a-z0-9-]+)+$"
+              description: "The Actor ID of the signer. Supports scoped identifiers (e.g. agent:camilo:cursor)."
+            role:
+              type: string
+              pattern: "^([a-z-]+|custom:[a-z0-9-]+)$"
+              minLength: 1
+              maxLength: 50
+              description: "The context role of the signature (e.g., 'author', 'reviewer', or 'custom:*')."
+            notes:
+              type: string
+              minLength: 1
+              maxLength: 1000
+              description: "Human-readable note from the signer. Part of the signature digest."
+            signature:
+              type: string
+              pattern: "^[A-Za-z0-9+/]{86}==$"
+              description: "The Ed25519 signature (base64 encoded, 88 chars with padding) of the signature digest."
+            timestamp:
+              type: integer
+              minimum: 1600000000
+              description: "Unix timestamp of the signature."
+          required:
+            - keyId
+            - role
+            - notes
+            - signature
+            - timestamp
+          additionalProperties: false
+        description: "An array of one or more signature objects."
+    required:
+      - version
+      - type
+      - payloadChecksum
+      - signatures
+    additionalProperties: false
+  payload:
+    type: object
+    description: "The specific record data, validated against the schema defined by header.type."
+required:
+  - header
+  - payload
+additionalProperties: false
+
+# Conditional: when type is "custom", schemaUrl and schemaChecksum are required
+if:
+  properties:
+    header:
+      type: object
+      properties:
+        type:
+          const: "custom"
+then:
+  properties:
+    header:
+      type: object
+      required: ["schemaUrl", "schemaChecksum"]

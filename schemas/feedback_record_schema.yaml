@@ -1,0 +1,221 @@
+# Copyright 2025-2026 GitGovernance (https://www.gitgovernance.com)
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ---
+# FeedbackRecord Schema (v1.0)
+# Part of the GitGovernance Protocol — designed and maintained by GitGovernance.
+# Specification: RFC-07 (07_feedback.md)
+
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "feedback_record_schema.yaml"
+title: "FeedbackRecord"
+description: "Canonical schema for feedback records — the structured conversation about work."
+additionalProperties: false
+type: object
+required:
+  - id
+  - entityType
+  - entityId
+  - type
+  - status
+  - content
+properties:
+  id:
+    type: string
+    pattern: "^\\d{10}-feedback-[a-z0-9-]{1,50}$"
+    maxLength: 70
+    description: "Unique identifier for the feedback entry (10 timestamp + 1 dash + 8 'feedback' + 1 dash + max 50 slug = 70 max)"
+    examples:
+      - "1752788100-feedback-blocking-rest-api"
+      - "1752788400-feedback-question-test-coverage"
+
+  entityType:
+    type: string
+    enum:
+      - actor
+      - agent
+      - task
+      - execution
+      - feedback
+      - cycle
+      - workflow
+    description: "The type of entity this feedback refers to."
+
+  entityId:
+    type: string
+    minLength: 1
+    maxLength: 256
+    description: |
+      The ID of the entity this feedback refers to.
+      Must match the ID pattern for its entityType:
+      - actor: ^(human|agent)(:[a-z0-9-]+)+$
+      - agent: ^agent(:[a-z0-9-]+)+$
+      - task: ^\d{10}-task-[a-z0-9-]{1,50}$
+      - execution: ^\d{10}-exec-[a-z0-9-]{1,50}$
+      - feedback: ^\d{10}-feedback-[a-z0-9-]{1,50}$
+      - cycle: ^\d{10}-cycle-[a-z0-9-]{1,50}$
+      - workflow: ^\d{10}-workflow-[a-z0-9-]{1,50}$
+    examples:
+      - "1752274500-task-implementar-oauth"
+      - "1752642000-exec-subtarea-9-4"
+      - "1752788100-feedback-blocking-rest-api"
+      - "human:camilo"
+
+  type:
+    type: string
+    enum:
+      - blocking
+      - suggestion
+      - question
+      - approval
+      - clarification
+      - assignment
+    description: "The semantic intent of the feedback."
+
+  status:
+    type: string
+    enum:
+      - open
+      - acknowledged
+      - resolved
+      - wontfix
+    description: |
+      The lifecycle status of the feedback.
+      FeedbackRecords are immutable. To change status, create a new FeedbackRecord
+      that references this one using entityType: "feedback" and resolvesFeedbackId.
+
+  content:
+    type: string
+    minLength: 1
+    description: "The content of the feedback."
+
+  assignee:
+    type: string
+    pattern: "^(human|agent)(:[a-z0-9-]+)+$"
+    maxLength: 256
+    description: "Optional. The Actor ID responsible for addressing the feedback (e.g., 'human:maria', 'agent:camilo:cursor')."
+    examples:
+      - "human:maria"
+      - "agent:code-reviewer"
+      - "agent:camilo:cursor"
+
+  resolvesFeedbackId:
+    type: string
+    pattern: "^\\d{10}-feedback-[a-z0-9-]{1,50}$"
+    maxLength: 70
+    description: "Optional. The ID of another FeedbackRecord that this one resolves or responds to."
+    examples:
+      - "1752788100-feedback-blocking-rest-api"
+
+  metadata:
+    type: object
+    additionalProperties: true
+    description: |
+      Optional structured data for machine consumption.
+      Use this field for domain-specific data that needs to be programmatically processed.
+      Common use cases: waiver details (fingerprint, ruleId, file, line), approval context, assignment metadata.
+
+allOf:
+  - if:
+      required: ["entityType"]
+      properties:
+        entityType: { const: "actor" }
+    then:
+      properties:
+        entityId:
+          pattern: "^(human|agent)(:[a-z0-9-]+)+$"
+  - if:
+      required: ["entityType"]
+      properties:
+        entityType: { const: "agent" }
+    then:
+      properties:
+        entityId:
+          pattern: "^agent(:[a-z0-9-]+)+$"
+  - if:
+      required: ["entityType"]
+      properties:
+        entityType: { const: "task" }
+    then:
+      properties:
+        entityId:
+          pattern: "^\\d{10}-task-[a-z0-9-]{1,50}$"
+  - if:
+      required: ["entityType"]
+      properties:
+        entityType: { const: "execution" }
+    then:
+      properties:
+        entityId:
+          pattern: "^\\d{10}-exec-[a-z0-9-]{1,50}$"
+  - if:
+      required: ["entityType"]
+      properties:
+        entityType: { const: "feedback" }
+    then:
+      properties:
+        entityId:
+          pattern: "^\\d{10}-feedback-[a-z0-9-]{1,50}$"
+  - if:
+      required: ["entityType"]
+      properties:
+        entityType: { const: "cycle" }
+    then:
+      properties:
+        entityId:
+          pattern: "^\\d{10}-cycle-[a-z0-9-]{1,50}$"
+  - if:
+      required: ["entityType"]
+      properties:
+        entityType: { const: "workflow" }
+    then:
+      properties:
+        entityId:
+          pattern: "^\\d{10}-workflow-[a-z0-9-]{1,50}$"
+
+examples:
+  # Example 1: Blocking feedback on an execution
+  - id: "1752788100-feedback-blocking-rest-api"
+    entityType: "execution"
+    entityId: "1752642000-exec-subtarea-9-4"
+    type: "blocking"
+    status: "open"
+    content: "This implementation does not comply with the REST endpoint standard. Endpoints must follow the /api/v1/{resource}/{id} pattern. Currently uses /get-user?id=X which is not RESTful."
+
+  # Example 2: Feedback resolution (chaining)
+  - id: "1752788200-feedback-rest-api-fixed"
+    entityType: "feedback"
+    entityId: "1752788100-feedback-blocking-rest-api"
+    type: "clarification"
+    status: "resolved"
+    content: "Fix implemented. All endpoints now follow REST standard: GET /api/v1/users/:id, POST /api/v1/users, etc. Tests updated and passing."
+    resolvesFeedbackId: "1752788100-feedback-blocking-rest-api"
+
+  # Example 3: Task assignment
+  - id: "1752788300-feedback-assign-auth-task"
+    entityType: "task"
+    entityId: "1752274500-task-implementar-oauth"
+    type: "assignment"
+    status: "open"
+    content: "Assigning this task to Maria for her experience with OAuth2. High priority for the current sprint."
+    assignee: "human:maria"
+
+  # Example 4: Question on task
+  - id: "1752788400-feedback-question-test-coverage"
+    entityType: "task"
+    entityId: "1752274500-task-implementar-oauth"
+    type: "question"
+    status: "open"
+    content: "What level of test coverage is expected for this feature? The spec does not mention it explicitly. Should we aim for 80% like the rest of the project?"
