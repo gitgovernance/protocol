@@ -106,6 +106,18 @@ properties:
     minLength: 1
     description: "Additional comments, decisions made or added context"
 
+  metadata:
+    type: object
+    additionalProperties: true
+    description: |
+      Optional structured data for machine consumption.
+      Use this field for domain-specific data that needs to be programmatically processed.
+      Complements tags (classification) and notes (free text) with structured, queryable data.
+      Common use cases: epic metadata, external tool references, agent metrics, compliance tags.
+    examples:
+      - { "epic": true, "phase": "implementation", "files": { "overview": "overview.md" } }
+      - { "jira": "AUTH-42", "storyPoints": 5 }
+
 examples:
   # Example 1: New task in draft state
   - id: "1752274500-task-implement-oauth-flow"

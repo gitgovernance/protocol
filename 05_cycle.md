@@ -115,6 +115,26 @@ The Cycle Record is the `payload` inside an Embedded Metadata envelope (RFC-01) 
 | `childCycleIds` | array of strings | items: `^\d{10}-cycle-[a-z0-9-]{1,50}$`, maxLength: 67 | `[]` | IDs of child cycles for hierarchical composition (§6.2). |
 | `tags` | array of strings | items: `^[a-z0-9-]+(:[a-z0-9-]+)*$`, maxLength per item: 100 | `[]` | `key:value` tags for categorization (e.g. `sprint:24`, `team:backend`). |
 | `notes` | string | minLength: 1 | — | Description of the cycle's goals, objectives, and context. |
+| `metadata` | object | additionalProperties: true | — | Structured data for programmatic consumption (see §4.3). |
+
+### 4.3. Metadata
+
+| Property | Value |
+|----------|-------|
+| **Field** | `metadata` |
+| **Type** | `object` |
+| **Required** | No |
+| **additionalProperties** | `true` |
+
+An optional field for structured, machine-readable data. While `tags` provide flat classification and `notes` provide free-form human text, `metadata` carries structured data intended for programmatic consumption by products, workflows, or external tools.
+
+**Semantics:** The protocol does not prescribe any keys or structure within `metadata`. Its contents are domain-specific and opaque to the protocol layer. Implementations SHOULD preserve metadata faithfully across read/write cycles.
+
+**Common use cases:**
+- **Epic lifecycle:** `{ "epic": true, "phase": "active", "files": { "overview": "...", "roadmap": "...", "implementation_plan": "..." } }`
+- **Sprint tracking:** `{ "sprint": 24, "velocity": 42, "team": "backend" }`
+- **OKR alignment:** `{ "okr": "growth-q4", "keyResult": "KR-3" }`
+- **Budget allocation:** `{ "budget": 50000, "currency": "USD" }`
 
 No additional properties are allowed at the root level.
 
@@ -321,6 +341,50 @@ A high-level cycle that composes child cycles instead of directly referencing ta
     ],
     "tags": ["roadmap:q4", "strategy:growth", "okr:scale-to-1m-users"],
     "notes": "Quarterly objective: Scale to 1M active users. Includes performance improvements, new auth system, and mobile app launch."
+  }
+}
+```
+
+### 10.4. Epic Cycle with Metadata
+
+A cycle representing an epic, using metadata to store structured lifecycle information.
+
+```json
+{
+  "header": {
+    "version": "1.0",
+    "type": "cycle",
+    "payloadChecksum": "k9l0m1a1b2c3789012345678901234567890123456789012345678901234nopq",
+    "signatures": [
+      {
+        "keyId": "human:tech-lead",
+        "role": "author",
+        "notes": "Auth epic created with structured metadata for lifecycle tracking",
+        "signature": "TuVwXyZaBcDeFgHiJkLmNoPqRsTuVwXyZaBcDeFgHiJkLmNoPqRsTuVwXyZaBcDeFgHiJkLmNoPqRsA==",
+        "timestamp": 1754700000
+      }
+    ]
+  },
+  "payload": {
+    "id": "1754700000-cycle-q4-auth-epic",
+    "title": "Q4 2025 - Auth Epic",
+    "status": "active",
+    "taskIds": [
+      "1752550000-task-implement-oauth2-flow",
+      "1752360900-task-2fa-implementation"
+    ],
+    "tags": ["epic", "auth"],
+    "metadata": {
+      "epic": true,
+      "phase": "active",
+      "files": {
+        "overview": "epics/auth/overview.md",
+        "roadmap": "epics/auth/roadmap.md",
+        "implementation_plan": "epics/auth/implementation_plan.md"
+      },
+      "velocity": 42,
+      "team": "backend"
+    }
   }
 }
 ```

@@ -94,6 +94,18 @@ properties:
     minLength: 1
     description: "Optional description of the cycle's goals, objectives, and context."
 
+  metadata:
+    type: object
+    additionalProperties: true
+    description: |
+      Optional structured data for machine consumption.
+      Use this field for domain-specific data that needs to be programmatically processed.
+      Extends the strategic grouping with structured, queryable attributes.
+      Common use cases: epic lifecycle, sprint configuration, OKR tracking, budget allocation.
+    examples:
+      - { "epic": true, "phase": "active", "files": { "overview": "overview.md", "roadmap": "roadmap.md", "plan": "implementation_plan.md" } }
+      - { "sprint": 24, "velocity": 42, "team": "backend" }
+
 examples:
   # Example 1: Sprint (2-week iteration)
   - id: "1754400000-cycle-sprint-24-api-performance"
