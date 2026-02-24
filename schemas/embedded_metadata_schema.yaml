@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # ---
-# EmbeddedMetadata Schema (v1.0)
+# EmbeddedMetadata Schema (v1.1)
 # Part of the GitGovernance Protocol — designed and maintained by GitGovernance.
 # Specification: RFC-01 (01_embedded.md)
 
@@ -29,8 +29,8 @@ properties:
     properties:
       version:
         type: string
-        enum: ["1.0"]
-        description: "Version of the embedded metadata format."
+        pattern: "^\\d+\\.\\d+$"
+        description: "Protocol version in MAJOR.MINOR format (e.g. \"1.1\", \"2.0\")."
       type:
         type: string
         enum:

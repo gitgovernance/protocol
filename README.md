@@ -3,13 +3,13 @@
   SPDX-License-Identifier: Apache-2.0
 -->
 
-# GitGovernance Protocol (v1.0)
+# GitGovernance Protocol (v1.1)
 
 > **Cryptographic governance for humans and AI agents. Open protocol. Offline-verifiable. Git-native.**
 
-The complete, implementation-agnostic specification for the GitGovernance Protocol v1.0 — 8 RFCs and 8 JSON Schemas defining how decisions, actions, and exceptions are recorded as signed, immutable artifacts in Git.
+The complete, implementation-agnostic specification for the GitGovernance Protocol v1.1 — 8 RFCs and 8 JSON Schemas defining how decisions, actions, and exceptions are recorded as signed, immutable artifacts in Git.
 
-**Status**: v1.0 Stable\
+**Status**: v1.1 Stable\
 **Created**: May 2025\
 **License**: Apache-2.0
 
@@ -21,7 +21,7 @@ Every record in the protocol follows the same pattern: domain data (payload) wra
 
 ```
 ┌─ Header ────────────────────────────────────────────────┐
-│  version: "1.0"                                         │
+│  version: "1.1"                                         │
 │  type: "execution"                                      │
 │  payloadChecksum: SHA-256(canonicalize(payload))        │
 │  signatures:                                            │
@@ -148,7 +148,7 @@ The protocol uses **MAJOR.MINOR** versioning:
 - **v1.x** (minor) — New RFCs, new optional fields in existing schemas, new examples, clarifications. Backwards-compatible: any implementation that validates v1.0 records will continue to work with v1.x records.
 - **v2.0** (major) — Breaking changes to existing RFCs or required schema fields. Requires a migration path.
 
-**Stability guarantee**: v1.0 schemas are frozen. Required fields, field types, and validation patterns will not change within the v1.x line. New optional fields may be added.
+**Stability guarantee**: v1.x schemas maintain backward compatibility. Required fields, field types, and validation patterns will not change within the v1.x line. New optional fields may be added.
 
 **Amendment process**: Changes are proposed via GitHub Issues, discussed openly, and published as GitHub Releases with a changelog describing what changed and why.
 
