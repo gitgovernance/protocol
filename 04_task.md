@@ -19,7 +19,7 @@
 
 # RFC-04: Task Record
 
-> Version: 1.0 | Status: Stable\
+> Version: 1.1 | Status: Stable\
 > Created: May 2025 | Last updated: 2026-02-04\
 > Schema: `schemas/task_record_schema.yaml`
 
@@ -111,6 +111,26 @@ The Task Record is the `payload` inside an Embedded Metadata envelope (RFC-01) w
 | `tags` | array of strings | items: `^[a-z0-9-]+(:[a-z0-9-]+)*$`, minLength: 1 | `[]` | `key:value` tags for categorization (e.g. `skill:react`, `category:bug`). |
 | `references` | array of strings | items: minLength: 1, maxLength: 500 | `[]` | Typed links to related resources (§7). |
 | `notes` | string | minLength: 1 | — | Additional context, decisions, or clarifications. |
+| `metadata` | object | additionalProperties: true | — | Structured data for programmatic consumption (see §4.3). |
+
+### 4.3. Metadata
+
+| Property | Value |
+|----------|-------|
+| **Field** | `metadata` |
+| **Type** | `object` |
+| **Required** | No |
+| **additionalProperties** | `true` |
+
+An optional field for structured, machine-readable data. While `tags` provide flat classification and `notes` provide free-form human text, `metadata` carries structured data intended for programmatic consumption by products, workflows, or external tools.
+
+**Semantics:** The protocol does not prescribe any keys or structure within `metadata`. Its contents are domain-specific and opaque to the protocol layer. Implementations SHOULD preserve metadata faithfully across read/write cycles.
+
+**Common use cases:**
+- **Epic modeling:** `{ "epic": true, "phase": "active", "files": {...} }`
+- **External tool integration:** `{ "jira": "PROJ-123", "linearId": "LIN-456" }`
+- **Agent metrics:** `{ "estimatedHours": 4, "model": "claude-opus-4-6" }`
+- **Compliance tagging:** `{ "regulation": "SOC2", "controlId": "CC6.1" }`
 
 No additional properties are allowed at the root level.
 
@@ -405,6 +425,45 @@ A task with full lifecycle — created, audited, executed, and approved.
       "commit:xyz789"
     ],
     "notes": "All 47 type violations fixed. Approved by tech lead after code review. Pre-commit hook tested with husky."
+  }
+}
+```
+
+### 11.4. Task with Metadata (epic modeling)
+
+A task that uses metadata to associate structured, machine-readable data.
+
+```json
+{
+  "header": {
+    "version": "1.0",
+    "type": "task",
+    "payloadChecksum": "m4n5o6a1b2c3789012345678901234567890123456789012345678901234pqrs",
+    "signatures": [
+      {
+        "keyId": "agent:planner",
+        "role": "author",
+        "notes": "Task created as part of OAuth epic with structured metadata for tracking",
+        "signature": "VwXyZaBcDeFgHiJkLmNoPqRsTuVwXyZaBcDeFgHiJkLmNoPqRsTuVwXyZaBcDeFgHiJkLmNoPqRsTuA==",
+        "timestamp": 1752550000
+      }
+    ]
+  },
+  "payload": {
+    "id": "1752550000-task-implement-oauth2-flow",
+    "title": "Implement OAuth2 authorization code flow",
+    "status": "active",
+    "priority": "high",
+    "description": "Implement OAuth2 authorization code flow with PKCE for the web application. Must support GitHub and Google providers.",
+    "cycleIds": ["1752270000-cycle-auth-mvp"],
+    "tags": ["skill:security", "category:feature"],
+    "references": ["file:docs/architecture/auth-flow.md"],
+    "metadata": {
+      "epic": true,
+      "phase": "implementation",
+      "estimatedHours": 8,
+      "jira": "AUTH-42"
+    }
   }
 }
 ```

@@ -19,7 +19,7 @@
 
 # RFC-07: Feedback Record
 
-> Version: 1.0 | Status: Stable\
+> Version: 1.1 | Status: Stable\
 > Created: May 2025 | Last updated: 2026-02-17\
 > Schema: `schemas/feedback_record_schema.yaml`
 

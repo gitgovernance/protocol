@@ -19,7 +19,7 @@
 
 # RFC-01: Embedded Metadata
 
-> Version: 1.0 | Status: Stable\
+> Version: 1.1 | Status: Stable\
 > Created: May 2025 | Last updated: 2026-02-04\
 > Schema: `schemas/embedded_metadata_schema.yaml`
 
@@ -78,7 +78,7 @@ No additional properties are allowed at the root level.
 
 | Field | Type | Constraint | Description |
 |:------|:-----|:-----------|:------------|
-| `version` | string | `"1.0"` | Protocol version. |
+| `version` | string | `^\d+\.\d+$` | Protocol version in MAJOR.MINOR format (e.g. `"1.1"`, `"2.0"`). |
 | `type` | enum | `actor` &#124; `agent` &#124; `task` &#124; `execution` &#124; `feedback` &#124; `cycle` &#124; `workflow` &#124; `custom` | Determines which schema validates the payload. |
 | `payloadChecksum` | string | `^[a-fA-F0-9]{64}$` | SHA-256 hash of the canonicalized payload (see §5.1). |
 | `signatures` | array | `minItems: 1` | One or more Signature objects (see §4.3). |

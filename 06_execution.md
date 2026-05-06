@@ -19,7 +19,7 @@
 
 # RFC-06: Execution Record
 
-> Version: 1.0 | Status: Stable\
+> Version: 1.1 | Status: Stable\
 > Created: May 2025 | Last updated: 2026-02-04\
 > Schema: `schemas/execution_record_schema.yaml`
 
